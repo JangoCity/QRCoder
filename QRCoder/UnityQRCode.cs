@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if !NETSTANDARD
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace QRCoder
@@ -64,3 +65,4 @@ namespace QRCoder
         }
     }
 }
+#endif

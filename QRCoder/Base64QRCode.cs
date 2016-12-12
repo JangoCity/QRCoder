@@ -60,8 +60,8 @@ namespace QRCoder
             }
             MemoryStream memoryStream = new MemoryStream();
             bmp.Save(memoryStream, iFormat);
-            byte[] bitmapBytes = memoryStream.GetBuffer();
-            string bitmapString = Convert.ToBase64String(bitmapBytes, Base64FormattingOptions.None);
+            byte[] bitmapBytes = memoryStream.ToArray();
+            string bitmapString = Convert.ToBase64String(bitmapBytes);
             return bitmapString;
         }
 

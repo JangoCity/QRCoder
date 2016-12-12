@@ -219,3 +219,6 @@ pip-log.txt
 *.userprefs
 
 QRCoder/PortabilityAnalysis.html
+
+# .Net Core
+project.lock.json
