@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ZKWeb.Fork.QRCoder</id>
+    <version>1.0.0</version>
+    <title>ZKWeb.Fork.QRCoder</title>
+    <authors>Raffael Herrmann</authors>
+    <owners>Raffael Herrmann</owners>
+    <licenseUrl>https://github.com/codebude/QRCoder/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/codebude/QRCoder/</projectUrl>
+    <iconUrl>http://code-bude.net/downloads/qrcoder-logo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This is a fork for zkweb project which use ZKWeb.System.Drawing. QRCoder is a simple library, written in C#.NET, which enables you to create QR Codes. It's licensed under the MIT-license.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright &#x00A9; www.code-bude.net / Raffael Herrmann.  All rights reserved.</copyright>
+    <tags>c# csharp qr qrcoder qrcode qr-generator qr-code-generator</tags>
+    <dependencies>
+      <group targetFramework="net461">
+        <dependency id="ZKWeb.System.Drawing" version="2.0.0" />
+      </group>
+      <group targetFramework="netstandard1.6">
+        <dependency id="ZKWeb.System.Drawing" version="2.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\net461\QRCoder.dll" target="lib\net461\" />
+    <file src="bin\Release\netstandard1.6\QRCoder.dll" target="lib\netstandard1.6\" />
+  </files>
+</package>
