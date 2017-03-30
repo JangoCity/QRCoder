@@ -9,7 +9,6 @@ namespace QRCoder
 {
     public static class PayloadGenerator
     {
-
         public class WiFi
         {
             private readonly string ssid, password, authenticationMode;
@@ -38,7 +37,6 @@ namespace QRCoder
             }
         }
 
-
         public class Mail
         {
             private readonly string mailReceiver, subject, message;
@@ -66,7 +64,6 @@ namespace QRCoder
                 this.message = message;
                 this.encoding = encoding;
             }
-
 
             public override string ToString()
             {
@@ -113,11 +110,10 @@ namespace QRCoder
                 this.encoding = encoding;
             }
 
-
             public override string ToString()
             {
                 switch (this.encoding)
-                { 
+                {
                     case SMSEncoding.SMS:
                         return $"sms:{this.number}?body={System.Uri.EscapeDataString(this.subject)}";
                     case SMSEncoding.SMS_iOS:
@@ -155,7 +151,7 @@ namespace QRCoder
                 this.subject = subject;
                 this.encoding = encoding;
             }
-            
+
             public override string ToString()
             {
                 switch (this.encoding)
@@ -167,7 +163,6 @@ namespace QRCoder
                     default:
                         return "mms:";
                 }
-                
             }
 
             public enum MMSEncoding
@@ -175,7 +170,6 @@ namespace QRCoder
                 MMS,
                 MMSTO
             }
-
         }
 
         public class Geolocation
@@ -222,7 +216,6 @@ namespace QRCoder
                 return $"tel:{this.number}";
             }
         }
-
 
         public class SkypeCall
         {
@@ -368,12 +361,10 @@ namespace QRCoder
                 if (messageToGirocodeUser.Length > 70)
                     throw new GirocodeException("Message to the Girocode-User reader texts have to shorter than 71 chars.");
                 this.messageToGirocodeUser = messageToGirocodeUser;
-
             }
 
             public override string ToString()
             {
-
                 var girocodePayload = "BCD" + br;
                 girocodePayload += (version.Equals(GirocodeVersion.Version1) ? "001" : "002") + br;
                 girocodePayload += (int)encoding + 1 + br;
@@ -409,7 +400,7 @@ namespace QRCoder
             public enum GirocodeEncoding
             {
                 UTF_8,
-                ISO_8859_1, 
+                ISO_8859_1,
                 ISO_8859_2,
                 ISO_8859_4,
                 ISO_8859_5,
@@ -464,7 +455,7 @@ namespace QRCoder
 
                 if (this.encoding.Equals(EventEncoding.iCalComplete))
                     vEvent = $@"BEGIN:VCALENDAR{Environment.NewLine}VERSION:2.0{Environment.NewLine}{vEvent}{Environment.NewLine}END:VCALENDAR";
-                
+
                 return vEvent;
             }
 
@@ -475,24 +466,316 @@ namespace QRCoder
             }
         }
 
+        public class OneTimePassword
+        {
+            //https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+            public OneTimePasswordAuthType Type { get; set; } = OneTimePasswordAuthType.TOTP;
+            public string Secret { get; set; }
+            public OoneTimePasswordAuthAlgorithm Algorithm { get; set; } = OoneTimePasswordAuthAlgorithm.SHA1;
+            public string Issuer { get; set; }
+            public string Label { get; set; }
+            public int Digits { get; set; } = 6;
+            public int? Counter { get; set; } = null;
+            public int? Period { get; set; } = 30;
+
+            public enum OneTimePasswordAuthType
+            {
+                TOTP,
+                HOTP,
+            }
+
+            public enum OoneTimePasswordAuthAlgorithm
+            {
+                SHA1,
+                SHA256,
+                SHA512,
+            }
+
+            public override string ToString()
+            {
+                switch (Type)
+                {
+                    case OneTimePasswordAuthType.TOTP:
+                        return TimeToString();
+                    case OneTimePasswordAuthType.HOTP:
+                        return HMACToString();
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            // Note: Issuer:Label must only contain 1 : if either of the Issuer or the Label has a : then it is invalid.
+            // Defaults are 6 digits and 30 for Period
+
+            private string HMACToString()
+            {
+                var sb = new StringBuilder("otpauth://hotp/");
+                ProcessCommonFields(sb);
+                var actualCounter = Counter ?? 1;
+                sb.Append("&counter=" + actualCounter);
+                return sb.ToString();
+            }
+
+            private string TimeToString()
+            {
+                if (Period == null)
+                {
+                    throw new Exception("Period must be set when using OneTimePasswordAuthType.TOTP");
+                }
+
+                var sb = new StringBuilder("otpauth://totp/");
+
+                ProcessCommonFields(sb);
+
+                if (Period != 30)
+                {
+                    sb.Append("&period=" + Period);
+                }
+
+                return sb.ToString();
+            }
+
+            private void ProcessCommonFields(StringBuilder sb)
+            {
+                if (String40Methods.IsNullOrWhiteSpace(Secret))
+                {
+                    throw new Exception("Secret must be a filled out base32 encoded string");
+                }
+                string strippedSecret = Secret.Replace(" ", "");
+                string escapedIssuer = null;
+                string escapedLabel = null;
+
+                if (!String40Methods.IsNullOrWhiteSpace(Issuer))
+                {
+                    if (Issuer.Contains(":"))
+                    {
+                        throw new Exception("Issuer must not have a ':'");
+                    }
+                    escapedIssuer = Uri.EscapeUriString(Issuer);
+                }
+
+                if (!String40Methods.IsNullOrWhiteSpace(Label))
+                {
+                    if (Label.Contains(":"))
+                    {
+                        throw new Exception("Label must not have a ':'");
+                    }
+                    escapedLabel = Uri.EscapeUriString(Label);
+                }
+
+                if (escapedLabel != null)
+                {
+                    if (escapedIssuer != null)
+                    {
+                        escapedLabel = escapedIssuer + ":" + escapedLabel;
+                    }
+                }
+                else if (escapedIssuer != null)
+                {
+                    escapedLabel = escapedIssuer;
+                }
+
+                if (escapedLabel != null)
+                {
+                    sb.Append(escapedLabel);
+                }
+
+                sb.Append("?secret=" + strippedSecret);
+
+                if (escapedIssuer != null)
+                {
+                    sb.Append("&issuer=" + escapedIssuer);
+                }
+
+                if (Digits != 6)
+                {
+                    sb.Append("&digits=" + Digits);
+                }
+            }
+        }
+
+
+        public class ShadowSocksConfig
+        {
+            private readonly string hostname, password, tag, methodStr;
+            private readonly Method method;
+            private readonly int port;
+            private Dictionary<string, string> encryptionTexts = new Dictionary<string, string>() {
+                { "Aes128Cfb", "aes-128-cfb" },
+                { "Aes128Cfb1", "aes-128-cfb1" },
+                { "Aes128Cfb8", "aes-128-cfb8" },
+                { "Aes128Ctr", "aes-128-ctr" },
+                { "Aes128Ofb", "aes-128-ofb" },
+                { "Aes192Cfb", "aes-192-cfb" },
+                { "Aes192Cfb1", "aes-192-cfb1" },
+                { "Aes192Cfb8", "aes-192-cfb8" },
+                { "Aes192Ctr", "aes-192-ctr" },
+                { "Aes192Ofb", "aes-192-ofb" },
+                { "Aes256Cb", "aes-256-cfb" },
+                { "Aes256Cfb1", "aes-256-cfb1" },
+                { "Aes256Cfb8", "aes-256-cfb8" },
+                { "Aes256Ctr", "aes-256-ctr" },
+                { "Aes256Ofb", "aes-256-ofb" },
+                { "BfCfb", "bf-cfb" },
+                { "Camellia128Cfb", "camellia-128-cfb" },
+                { "Camellia192Cfb", "camellia-192-cfb" },
+                { "Camellia256Cfb", "camellia-256-cfb" },
+                { "Cast5Cfb", "cast5-cfb" },
+                { "Chacha20", "chacha20" },
+                { "DesCfb", "des-cfb" },
+                { "IdeaCfb", "idea-cfb" },
+                { "Rc2Cfb", "rc2-cfb" },
+                { "Rc4", "rc4" },
+                { "Rc4Md5", "rc4-md5" },
+                { "Salsa20", "salsa20" },
+                { "Salsa20Ctr", "salsa20-ctr" },
+                { "SeedCfb", "seed-cfb" },
+                { "Table", "table" }
+            };
+
+
+            public ShadowSocksConfig(string hostname, int port, string password, Method method, string tag = null)
+            {
+                this.hostname = hostname;
+                if (port < 1 || port > 65535)
+                    throw new ShadowSocksConfigException("Value of 'port' must be within 0 and 65535.");
+                this.port = port;
+                this.password = password;
+                this.method = method;
+                this.methodStr = encryptionTexts[method.ToString()];
+                this.tag = tag;    
+            }
+
+            public override string ToString()
+            {
+                var connectionString = $"{methodStr}:{password}@{hostname}:{port}";
+                var connectionStringEncoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(connectionString));
+                return $"ss://{connectionStringEncoded}{(!string.IsNullOrEmpty(tag) ? $"#{tag}" : string.Empty)}";
+            }
+
+            public enum Method
+            {
+                Aes128Cfb,
+                Aes128Cfb1,
+                Aes128Cfb8,
+                Aes128Ctr,
+                Aes128Ofb,
+                Aes192Cfb,
+                Aes192Cfb1,
+                Aes192Cfb8,
+                Aes192Ctr,
+                Aes192Ofb,
+                Aes256Cb,
+                Aes256Cfb1,
+                Aes256Cfb8,
+                Aes256Ctr,
+                Aes256Ofb,
+                BfCfb,
+                Camellia128Cfb,
+                Camellia192Cfb,
+                Camellia256Cfb,
+                Cast5Cfb,
+                Chacha20,
+                DesCfb,
+                IdeaCfb,
+                Rc2Cfb,
+                Rc4,
+                Rc4Md5,
+                Salsa20,
+                Salsa20Ctr,
+                SeedCfb,
+                Table
+            }
+
+            public class ShadowSocksConfigException : Exception
+            {
+                public ShadowSocksConfigException()
+                {
+                }
+
+                public ShadowSocksConfigException(string message)
+                    : base(message)
+                {
+                }
+
+                public ShadowSocksConfigException(string message, Exception inner)
+                    : base(message, inner)
+                {
+                }
+            }
+        }
+
+
+        public class MoneroTransaction
+        {
+            private readonly string address, txPaymentId, recipientName, txDescription;
+            private readonly float? txAmount;
+                       
+
+            public MoneroTransaction(string address, float? txAmount = null, string txPaymentId = null, string recipientName = null, string txDescription = null)
+            {
+                if (string.IsNullOrEmpty(address))
+                    throw new MoneroTransactionException("The address is mandatory and has to be set.");
+                this.address = address;
+                if (txAmount != null && txAmount <= 0)
+                    throw new MoneroTransactionException("Value of 'txAmount' must be greater than 0.");
+                this.txAmount = txAmount;
+                this.txPaymentId = txPaymentId;
+                this.recipientName = recipientName;
+                this.txDescription = txDescription;
+            }
+
+            public override string ToString()
+            {
+                var moneroUri = $"monero://{address}{(!string.IsNullOrEmpty(txPaymentId) || !string.IsNullOrEmpty(recipientName) || !string.IsNullOrEmpty(txDescription) || txAmount != null ? "?" : string.Empty)}";
+                moneroUri += (!string.IsNullOrEmpty(txPaymentId) ? $"tx_payment_id={Uri.EscapeDataString(txPaymentId)}&" : string.Empty);
+                moneroUri += (!string.IsNullOrEmpty(recipientName) ? $"recipient_name={Uri.EscapeDataString(recipientName)}&" : string.Empty);
+                moneroUri += (txAmount != null ? $"tx_amount={txAmount.ToString().Replace(",",".")}&" : string.Empty);
+                moneroUri += (!string.IsNullOrEmpty(txDescription) ? $"tx_description={Uri.EscapeDataString(txDescription)}" : string.Empty);
+                return moneroUri.TrimEnd('&');
+            }
+                        
+
+            public class MoneroTransactionException : Exception
+            {
+                public MoneroTransactionException()
+                {
+                }
+
+                public MoneroTransactionException(string message)
+                    : base(message)
+                {
+                }
+
+                public MoneroTransactionException(string message, Exception inner)
+                    : base(message, inner)
+                {
+                }
+            }
+        }
+
+
+
         private static string ConvertStringToEncoding(string message, string encoding)
         {
             Encoding iso = Encoding.GetEncoding(encoding);
             Encoding utf8 = Encoding.UTF8;
             byte[] utfBytes = utf8.GetBytes(message);
             byte[] isoBytes = Encoding.Convert(utf8, iso, utfBytes);
-            #if NET40
-                return iso.GetString(isoBytes);
-            #else
+#if NET40
+            return iso.GetString(isoBytes);
+#else
                 return iso.GetString(isoBytes,0, isoBytes.Length);
             #endif
-
         }
 
         private static string EscapeInput(string inp, bool simple = false)
         {
-            char[] forbiddenChars = { '\\', ';', ',', ':' };
-            if (simple) { forbiddenChars = new char[1] { ':' }; }
+            char[] forbiddenChars = {'\\', ';', ',', ':'};
+            if (simple)
+            {
+                forbiddenChars = new char[1] {':'};
+            }
             foreach (var c in forbiddenChars)
             {
                 inp = inp.Replace(c.ToString(), "\\" + c);

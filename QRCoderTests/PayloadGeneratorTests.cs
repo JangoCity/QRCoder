@@ -976,6 +976,190 @@ namespace QRCoderTests
             Assert.IsType<PayloadGenerator.Girocode.GirocodeException>(exception);
             exception.Message.ShouldBe("Message to the Girocode-User reader texts have to shorter than 71 chars.");
         }
+
+        [Fact]
+        [Category("PayloadGenerator/OneTimePassword")]
+        public void one_time_password_generator_time_based_generates_with_standard_options()
+        {
+            var pg = new PayloadGenerator.OneTimePassword
+            {
+                Secret = "pwq6 5q55",
+                Issuer = "Google",
+                Label = "test@google.com",
+            };
+
+            pg.ToString().ShouldBe("otpauth://totp/Google:test@google.com?secret=pwq65q55&issuer=Google");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/OneTimePassword")]
+        public void one_time_password_generator_hmac_based_generates_with_standard_options()
+        {
+            var pg = new PayloadGenerator.OneTimePassword
+            {
+                Secret = "pwq6 5q55",
+                Issuer = "Google",
+                Label = "test@google.com",
+                Type = PayloadGenerator.OneTimePassword.OneTimePasswordAuthType.HOTP,
+                Counter = 500,
+            };
+
+            pg.ToString().ShouldBe("otpauth://hotp/Google:test@google.com?secret=pwq65q55&issuer=Google&counter=500");
+        }
+        //TODO: Include more tests for the one time password payload generator
+        
+
+        [Fact]
+        [Category("PayloadGenerator/ShadowSocksConfig")]
+        public void shadowsocks_generator_can_generate_payload()
+        {
+            var host = "192.168.2.5";
+            var port = 1;
+            var password = "s3cr3t";
+            var method = PayloadGenerator.ShadowSocksConfig.Method.Rc4Md5;
+            var generator = new PayloadGenerator.ShadowSocksConfig(host, port, password, method);
+
+            generator
+                .ToString()
+                .ShouldBe("ss://cmM0LW1kNTpzM2NyM3RAMTkyLjE2OC4yLjU6MQ==");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/ShadowSocksConfig")]
+        public void shadowsocks_generator_can_generate_payload_with_tag()
+        {
+            var host = "192.168.2.5";
+            var port = 65535;
+            var password = "s3cr3t";
+            var method = PayloadGenerator.ShadowSocksConfig.Method.Rc4Md5;
+            var tag = "server42";
+            var generator = new PayloadGenerator.ShadowSocksConfig(host, port, password, method, tag);
+           
+            generator
+                .ToString()
+                .ShouldBe("ss://cmM0LW1kNTpzM2NyM3RAMTkyLjE2OC4yLjU6NjU1MzU=#server42");
+        }
+
+        
+        [Fact]
+        [Category("PayloadGenerator/ShadowSocksConfig")]
+        public void shadowsocks_generator_should_throw_portrange_low_exception()
+        {
+            var host = "192.168.2.5";
+            var port = 0;
+            var password = "s3cr3t";
+            var method = PayloadGenerator.ShadowSocksConfig.Method.Rc4Md5;
+            
+            var exception = Record.Exception(() => new PayloadGenerator.ShadowSocksConfig(host, port, password, method));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.ShadowSocksConfig.ShadowSocksConfigException>(exception);
+            exception.Message.ShouldBe("Value of 'port' must be within 0 and 65535.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/ShadowSocksConfig")]
+        public void shadowsocks_generator_should_throw_portrange_high_exception()
+        {
+            var host = "192.168.2.5";
+            var port = 65536;
+            var password = "s3cr3t";
+            var method = PayloadGenerator.ShadowSocksConfig.Method.Rc4Md5;
+
+            var exception = Record.Exception(() => new PayloadGenerator.ShadowSocksConfig(host, port, password, method));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.ShadowSocksConfig.ShadowSocksConfigException>(exception);
+            exception.Message.ShouldBe("Value of 'port' must be within 0 and 65535.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/Monero")]
+        public void monero_generator_can_generate_payload_simple()
+        {
+            var address = "46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em";
+            var generator = new PayloadGenerator.MoneroTransaction(address);
+
+            generator
+                .ToString()
+                .ShouldBe("monero://46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/Monero")]
+        public void monero_generator_can_generate_payload_first_param()
+        {
+            var address = "46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em";
+            var amount = 1.3f;
+            var generator = new PayloadGenerator.MoneroTransaction(address, amount);
+
+            generator
+                .ToString()
+                .ShouldBe("monero://46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em?tx_amount=1.3");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/Monero")]
+        public void monero_generator_can_generate_payload_named_param()
+        {
+            var address = "46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em";
+            var recipient = "Raffael Herrmann";
+            var generator = new PayloadGenerator.MoneroTransaction(address, recipientName: recipient);
+
+            generator
+                .ToString()
+                .ShouldBe("monero://46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em?recipient_name=Raffael%20Herrmann");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/Monero")]
+        public void monero_generator_can_generate_payload_full_param()
+        {
+            var address = "46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em";
+            var amount = 1.3f;
+            var paymentId = "1234567890123456789012345678901234567890123456789012345678901234";
+            var recipient = "Raffael Herrmann";
+            var description = "Monero transaction via QrCoder.NET.";
+            var generator = new PayloadGenerator.MoneroTransaction(address, amount, paymentId, recipient, description);
+
+            generator
+                .ToString()
+                .ShouldBe("monero://46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em?tx_payment_id=1234567890123456789012345678901234567890123456789012345678901234&recipient_name=Raffael%20Herrmann&tx_amount=1.3&tx_description=Monero%20transaction%20via%20QrCoder.NET.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/Monero")]
+        public void monero_generator_should_throw_wrong_amount_exception()
+        {
+            var address = "46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em";
+            var amount = -1f;
+
+            var exception = Record.Exception(() => new PayloadGenerator.MoneroTransaction(address, amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.MoneroTransaction.MoneroTransactionException>(exception);
+            exception.Message.ShouldBe("Value of 'txAmount' must be greater than 0.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/Monero")]
+        public void monero_generator_should_throw_no_address_exception()
+        {
+            var address = "";
+
+            var exception = Record.Exception(() => new PayloadGenerator.MoneroTransaction(address));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.MoneroTransaction.MoneroTransactionException>(exception);
+            exception.Message.ShouldBe("The address is mandatory and has to be set.");
+        }
     }
 }
 
