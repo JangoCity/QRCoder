@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "QRCoder", "QRCoder\QRCoder.xproj", "{57BA4392-0ACC-4C0B-A46E-5854F612850E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QRCoder", "QRCoder\QRCoder.csproj", "{57BA4392-0ACC-4C0B-A46E-5854F612850E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "QRCoderConsole", "QRCoderConsole\QRCoderConsole.xproj", "{7A041CF6-978D-45AF-817F-CA912B020CAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QRCoderConsole", "QRCoderConsole\QRCoderConsole.csproj", "{7A041CF6-978D-45AF-817F-CA912B020CAC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "QRCoderTests", "QRCoderTests\QRCoderTests.xproj", "{708BC0E6-BE5D-4411-87F6-99DBBD3C86D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QRCoderTests", "QRCoderTests\QRCoderTests.csproj", "{708BC0E6-BE5D-4411-87F6-99DBBD3C86D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

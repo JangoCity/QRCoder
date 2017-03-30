@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD
+﻿#if false
 using System.Collections.Generic;
 using UnityEngine;
 
