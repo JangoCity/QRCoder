@@ -1,5 +1,5 @@
-using System.Drawing;
-using System.Drawing.Drawing2D;
+using System.DrawingCore;
+using System.DrawingCore.Drawing2D;
 
 namespace QRCoder
 {
@@ -51,7 +51,7 @@ namespace QRCoder
             var size = (this.QrCodeData.ModuleMatrix.Count - (drawQuietZones ? 0 : 8)) * pixelsPerModule;
             var offset = drawQuietZones ? 0 : 4 * pixelsPerModule;
 
-            var bmp = new Bitmap(size, size, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            var bmp = new Bitmap(size, size, System.DrawingCore.Imaging.PixelFormat.Format24bppRgb);
             var gfx = Graphics.FromImage(bmp);
             gfx.InterpolationMode = InterpolationMode.HighQualityBicubic;
             gfx.CompositingQuality = CompositingQuality.HighQuality;
