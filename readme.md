@@ -2,15 +2,12 @@
 [![qrcoder MyGet Build Status](https://www.myget.org/BuildSource/Badge/qrcoder?identifier=10cbdaa5-2dd9-460b-b424-be44e75258ec)](https://www.myget.org/feed/qrcoder/package/nuget/QRCoder)
 ## Info 
 
-QRCoder is a simple library, written in C#.NET, which enables you to create QR Codes. It's licensed under the MIT-license and available as .NET Framework and .NET Core PCL version on NuGet.
+QRCoder is a simple library, written in C#.NET, which enables you to create QR codes. It hasn't any dependencies to other libraries and is available as .NET Framework and .NET Core PCL version on NuGet.
 
 Feel free to grab-up/fork the project and make it better!
 
-For more information visit:
-
-(German) => http://code-bude.net/2013/10/17/qrcoder-eine-open-source-qr-code-implementierung-in-csharp/
-
-(English) => http://en.code-bude.net/2013/10/17/qrcoder-an-open-source-qr-code-generator-implementation-in-csharp/
+For more information see:
+[**QRCode Wiki**](https://github.com/codebude/QRCoder/wiki) | [Creator's blog (english)](http://en.code-bude.net/2013/10/17/qrcoder-an-open-source-qr-code-generator-implementation-in-csharp/) | [Creator's blog (german)](http://code-bude.net/2013/10/17/qrcoder-eine-open-source-qr-code-implementierung-in-csharp/)
  
 
 ## Legal information and credits
@@ -22,7 +19,7 @@ in 10/2013. It's licensed under the MIT license.
 * * *
 
 
-##Installation
+## Installation
 
 Either checkout this Github repository or install QRCoder via NuGet Package Manager. If you want to use NuGet just search for "QRCoder" or run the following command in the NuGet Package Manager console:
 ```
@@ -37,7 +34,7 @@ PM> Install-Package QRCoder
 
 
 
-##Usage
+## Usage
 
 After referencing the QRCoder.dll in your project, you only need five lines of code, to generate and view your first QR code.
 
@@ -48,14 +45,8 @@ QRCode qrCode = new QRCode(qrCodeData);
 Bitmap qrCodeImage = qrCode.GetGraphic(20);
 ```
 
-###Optional parameters
+### Optional parameters and overloads
 
-The CreateQrCode-method has two optional parameters which affect the encoding of the payload. Both have default values. Only use them, if you know what you're doing.
-
-- **forceUtf8** *(bool)*: This parameter enables you to force text encoding in UTF-8. Be default (and as required by QR code ISO/IEC standard) text in Byte mode will be encoded in ISO-8859-1. Only if chars are detected, which can't be encoded in ISO-8859-1, QRCoder will switch to UTF-8. With the parameter you can force the usage of UTF-8 in any case.
-- **utf8BOM** *(bool)*: This parameter enables you to set ByteOrderMark (BOM) when QRCoder uses UTF-8 for text-encoding.
-
-###Overloads - Graphics generation
 The GetGraphics-method has some more overloads. The first two enable you to set the color of the QR code graphic. One uses Color-class-types, the other HTML hex color notation.
 
 ```
@@ -69,102 +60,31 @@ Bitmap qrCodeImage = qrCode.GetGraphic(20, "#000ff0", "#0ff000");
 The another overload enables you to render a logo/image in the center of the QR code.
 
 ```
-Bitmap qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, "C:\\Path\\to\\logo.jpg", 20);
+Bitmap qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, (Bitmap)Bitmap.FromFile("C:\\myimage.png"));
 ```
 
-###Special rendering types
+There are a plenty of other options. So feel free to read more on that in our wiki: [Wiki: How to use QRCoder](https://github.com/codebude/QRCoder/wiki/How-to-use-QRCoder)
+
+### Special rendering types
 
 Besides the normal QRCode class (which is shown in the example above) for creating QR codes in Bitmap format, there are some more QR code rendering classes, each for another special purpose.
 
-* QRCode<sup>*</sup>
-* Base64QRCode<sup>*</sup>
-* BitmapByteQRCode<sup></sup>
-* SvgQRCode<sup>*</sup>
-* UnityQRCode<sup>*</sup>
+* [QRCode<sup>*</sup>](https://github.com/codebude/QRCoder/wiki/Advanced-usage---QR-Code-renderers#21-qrcode-renderer-in-detail)
+* [Base64QRCode<sup>*</sup>](https://github.com/codebude/QRCoder/wiki/Advanced-usage---QR-Code-renderers#22-base64qrcode-renderer-in-detail)
+* [BitmapByteQRCode<sup></sup>](https://github.com/codebude/QRCoder/wiki/Advanced-usage---QR-Code-renderers#23-bitmapbyteqrcode-renderer-in-detail)
+* [SvgQRCode<sup>*</sup>](https://github.com/codebude/QRCoder/wiki/Advanced-usage---QR-Code-renderers#24-svgqrcode-renderer-in-detail)
+* [UnityQRCode<sup>*</sup>](https://github.com/codebude/QRCoder/wiki/Advanced-usage---QR-Code-renderers#25-unityqrcode-renderer-in-detail)
 
 
 *(&ast;) - Those classes are only available in the .NET Framework version. If you use the PCL version (e.g. for Universal apps), you have to use BitmapByteQRCode.*
 
-####QRCode.cs - standard QR code
+For more information about the different rendering types click on one of the types in the list above or have a look at: [Wiki: Advanced usage - QR-Code renderers](https://github.com/codebude/QRCoder/wiki/Advanced-usage---QR-Code-renderers)
 
-For an example see the snippet right at the beginning of this documentation.
-
-####Base64QRCode.cs - QR code as base64 string
-
-This class helps you to create a QR code as base64 string. It is useful for web- or web-based applications, where you embed the QR code as inline base64.
-
-```
-QRCodeGenerator qrGenerator = new QRCodeGenerator();
-QRCodeData qrCodeData = qrGenerator.CreateQrCode("The text which should be encoded.", QRCodeGenerator.ECCLevel.Q);
-Base64QRCode qrCode = new Base64QRCode(qrCodeData);
-string qrCodeImageAsBase64 = qrCode.GetGraphic(20);
-```
-
-####BitmapByteQRCode.cs - QR codes as Bitmap byte-Array
-
-This class helps you to create a QRCode as byte[] which contains a Bitmap. It was implemted for the PCL version of QRCoder because in .NET Core the System.Drawing namespace is missing and so none of the Graphics sugar, which is used in the other QR Code types is available.
-
-```
-QRCodeGenerator qrGenerator = new QRCodeGenerator();
-QRCodeData qrCodeData = qrGenerator.CreateQrCode("The text which should be encoded.", QRCodeGenerator.ECCLevel.Q);
-BitmapByteQRCode qrCode = new BitmapByteQRCode(qrCodeData);
-byte[] qrCodeImage = qrCode.GetGraphic(20);
-```
-
-A byte array was used, since in every target platform there are ways to create a image from that array. Following a quick example for a Windows 10 Universal App.
-
-```
-[...]
-byte[] qrCodeImage = qrCode.GetGraphic(20);
-
-using (InMemoryRandomAccessStream stream = new InMemoryRandomAccessStream())
-{
-	using (DataWriter writer = new DataWriter(stream.GetOutputStreamAt(0)))
-    {
-    	writer.WriteBytes(qrCodeImage);
-        await writer.StoreAsync();
-    }
-    var image = new BitmapImage();
-    await image.SetSourceAsync(stream);
-
-	imageViewer.Source = image;
-}
-```
-
-
-####SvgQRCode.cs - vectorized QR code as SVG file
-
-If you want to render QR code in vector format as SVG file, just use SvgQRCode instead of QRCode class.
-
-```
-QRCodeGenerator qrGenerator = new QRCodeGenerator();
-QRCodeData qrCodeData = qrGenerator.CreateQrCode("The text which should be encoded.", QRCodeGenerator.ECCLevel.Q);
-SvgQRCode qrCode = new SvgQRCode(qrCodeData);
-string qrCodeImageAsSVG = qrCode.GetGraphic(20);
-```
-
-The string *qrCodeImageAsSVG* contains the QR code as SVG formatted string. Either you pass the string to a control which can render SVG or just save it with FileWriter or StreamWriter class.
-
-
-####UnityQRCode.cs - QR codes in Unity
-
-If you want to render QR codes in Unity, just use UnityQRCode instead of QRCode class. It returns the QR code as Texture2D type.
-
-```
-QRCodeGenerator qrGenerator = new QRCodeGenerator();
-QRCodeData qrCodeData = qrGenerator.CreateQrCode("The text which should be encoded.", QRCodeGenerator.ECCLevel.Q);
-UnityQRCode qrCode = new UnityQRCode(qrCodeData);
-Texture2D qrCodeImage = qrCode.GetGraphic(20);
-```
-
-
-
-
-##PayloadGenerator.cs - Generate QR code payloads
+## PayloadGenerator.cs - Generate QR code payloads
 
 Technically QR code is just a visual representation of a text/string. Nevertheless most QR code readers can read "special" QR codes which trigger different actions. For example: WiFi-QRcodes which, when scanned by smartphone, let the smartphone join an access point automatically.
 
-This "special" QR codes are generated by using special structured payload string, when generating the QR code. The PayloadGenerator.cs class helps you to generate this payload strings. To generate a WiFi payload for example, you need just this one line of code:
+This "special" QR codes are generated by using special structured payload string, when generating the QR code. The [PayloadGenerator.cs class](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators) helps you to generate this payload strings. To generate a WiFi payload for example, you need just this one line of code:
 
 ```
 PayloadGenerator.WiFi wifiPayload = new PayloadGenerator.WiFi("MyWiFi-SSID", "MyWiFi-Pass", PayloadGenerator.WiFi.Authentication.WPA);
@@ -177,18 +97,26 @@ To generate a QR code from this payload, just call the "ToString()"-method and p
 QRCodeData qrCodeData = qrGenerator.CreateQrCode(wifiPayload.ToString(), QRCodeGenerator.ECCLevel.Q);
 //[...]
 ```
+You can learn more about the payload generator [in our Wiki](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators).
 
 The PayloadGenerator supports the following types of payloads:
 
-* Bitcoin Payment Address
-* Bookmark
-* Calendar events (iCal/vEvent)
-* Geolocation
-* Girocode
-* Mail
-* MMS
-* Phonenumber
-* Skype call
-* SMS
-* URL
-* WiFi
+* [BezahlCode](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#31-bezahlcode)
+* [Bitcoin Payment Address](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#32-bitcoin-payment-address)
+* [Bookmark](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#33-bookmark)
+* [Calendar events (iCal/vEvent)](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#34-calendar-events-icalvevent)
+* [ContactData (MeCard/vCard)](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#35-contactdata-mecardvcard)
+* [Geolocation](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#36-geolocation)
+* [Girocode](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#37-girocode)
+* [Mail](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#38-mail)
+* [MMS](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#39-mms)
+* [Monero address/payment](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#310-monero-addresspayment)
+* [One-Time-Password](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#311-one-time-password)
+* [Phonenumber](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#312-phonenumber)
+* [Shadowsocks configuration](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#313-shadowsocks-configuration)
+* [Skype call](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#314-skype-call)
+* [SMS](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#315-sms)
+* [SwissQrCode (ISO-20022)](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#316-swissqrcode-iso-20022)
+* [URL](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#317-url)
+* [WhatsAppMessage](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#318-whatsappmessage)
+* [WiFi](https://github.com/codebude/QRCoder/wiki/Advanced-usage---Payload-generators#319-wifi)

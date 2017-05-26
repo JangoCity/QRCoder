@@ -5,6 +5,9 @@ using Shouldly;
 using System.Globalization;
 using System.Threading;
 using QRCoderTests.XUnitExtenstions;
+using static QRCoder.PayloadGenerator.BezahlCode;
+using static QRCoder.PayloadGenerator.SwissQrCode.Reference;
+
 
 namespace QRCoderTests
 {
@@ -977,6 +980,1307 @@ namespace QRCoderTests
             exception.Message.ShouldBe("Message to the Girocode-User reader texts have to shorter than 71 chars.");
         }
 
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_singlepayment_minimal()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account: account, bnc: bnc, amount: amount);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepayment?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000&amount=10,00&currency=EUR&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_singlepayment_full()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var amount = 10.00m;
+            var postingKey = 69;
+            Currency currency = Currency.USD;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account, bnc, amount, "", 0, null, null, reason, postingKey, currency, DateTime.Now);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepayment?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000&postingkey=69&amount=10,00&reason=Thanks%20for%20all%20your%20efforts&currency=USD&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_singledirectdebit()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var amount = 10.00m;
+            var postingKey = 69;
+            Currency currency = Currency.USD;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singledirectdebit, name, account, bnc, amount, "", 0, null, null, reason, postingKey, currency, DateTime.Now);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singledirectdebit?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000&postingkey=69&amount=10,00&reason=Thanks%20for%20all%20your%20efforts&currency=USD&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_periodicsinglepayment()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var amount = 10.00m;
+            var postingKey = 69;
+            var periodicTimeunit = "W";
+            var periodicTimeunitRotation = 2;
+            var periodicFirstExecutionDate = DateTime.Now;
+            var periodicLastExecutionDate = DateTime.Now.AddMonths(3);
+            Currency currency = Currency.USD;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.periodicsinglepayment, name, account, bnc, amount, periodicTimeunit, periodicTimeunitRotation, periodicFirstExecutionDate, periodicLastExecutionDate, reason, postingKey, currency, DateTime.Now);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://periodicsinglepayment?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000&postingkey=69&amount=10,00&reason=Thanks%20for%20all%20your%20efforts&currency=USD&executiondate=" + DateTime.Now.ToString("ddMMyyyy") + "&periodictimeunit=W&periodictimeunitrotation=2&periodicfirstexecutiondate=" + periodicFirstExecutionDate.ToString("ddMMyyyy") + "&periodiclastexecutiondate=" + periodicLastExecutionDate.ToString("ddMMyyyy"));
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_singlepaymentsepa_minimal()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepaymentsepa?name=Wikimedia%20F%C3%B6rdergesellschaft&iban=DE33100205000001194700&bic=BFSWDE33BER&amount=10,00&currency=EUR&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_singlepaymentsepa_full()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var sepaReference = "Fake SEPA reference";
+            var amount = 10.00m;
+            Currency currency = Currency.USD;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban, bic, amount, "", 0, null, null, "", "", new DateTime(2017,03,01), reason, sepaReference, currency, DateTime.Now);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepaymentsepa?name=Wikimedia%20F%C3%B6rdergesellschaft&iban=DE33100205000001194700&bic=BFSWDE33BER&separeference=Fake%20SEPA%20reference&amount=10,00&reason=Thanks%20for%20all%20your%20efforts&currency=USD&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+        
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_singledirectdebitsepa()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var creditorId = "DE 02 TSV 01234567890";
+            var mandateId = "987543CB2";
+            var sepaReference = "Fake SEPA reference";
+            var amount = 10.00m;
+            Currency currency = Currency.USD;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singledirectdebitsepa, name, iban, bic, amount, "", 0, null, null, creditorId, mandateId, new DateTime(2017,03,01), reason, sepaReference, currency, DateTime.Now);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singledirectdebitsepa?name=Wikimedia%20F%C3%B6rdergesellschaft&iban=DE33100205000001194700&bic=BFSWDE33BER&separeference=Fake%20SEPA%20reference&creditorid=DE%2002%20TSV%2001234567890&mandateid=987543CB2&dateofsignature=01032017&amount=10,00&reason=Thanks%20for%20all%20your%20efforts&currency=USD&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_periodicsinglepaymentsepa()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var sepaReference = "Fake SEPA reference";
+            var amount = 10.00m;
+            var periodicTimeunit = "M";
+            var periodicTimeunitRotation = 1;
+            var periodicFirstExecutionDate = DateTime.Now;
+            var periodicLastExecutionDate = DateTime.Now.AddMonths(3);
+            Currency currency = Currency.USD;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.periodicsinglepaymentsepa, name, iban, bic, amount, periodicTimeunit, periodicTimeunitRotation, periodicFirstExecutionDate, periodicLastExecutionDate, "", "", new DateTime(2017, 03, 01), reason, sepaReference, currency, DateTime.Now);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://periodicsinglepaymentsepa?name=Wikimedia%20F%C3%B6rdergesellschaft&iban=DE33100205000001194700&bic=BFSWDE33BER&separeference=Fake%20SEPA%20reference&amount=10,00&reason=Thanks%20for%20all%20your%20efforts&currency=USD&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"&periodictimeunit=M&periodictimeunitrotation=1&periodicfirstexecutiondate=" + periodicFirstExecutionDate.ToString("ddMMyyyy") + "&periodiclastexecutiondate=" + periodicLastExecutionDate.ToString("ddMMyyyy"));
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_contact()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.contact, name, account: account, bnc: bnc);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://contact?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_contact_full()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.contact, name, account, bnc, "", "", "New business contact.");
+
+            generator
+                .ToString()
+                .ShouldBe("bank://contact?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000&reason=New%20business%20contact.");
+        }
+
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_contactv2_classic()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.contact_v2, name, account: account, bnc: bnc);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://contact_v2?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_contactv2_sepa()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.contact_v2, name, iban: iban, bic: bic);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://contact_v2?name=Wikimedia%20F%C3%B6rdergesellschaft&iban=DE33100205000001194700&bic=BFSWDE33BER");
+        }
+
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_can_generate_payload_contactv2_sepa_full()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.contact_v2, name, "", "", iban, bic, "A new v2 contact.");
+
+            generator
+                .ToString()
+                .ShouldBe("bank://contact_v2?name=Wikimedia%20F%C3%B6rdergesellschaft&iban=DE33100205000001194700&bic=BFSWDE33BER&reason=A%20new%20v2%20contact.");
+        }
+
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_handle_account_whitespaces()
+        {
+            var account = "01 194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account: account, bnc: bnc, amount: amount);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepayment?name=Wikimedia%20F%C3%B6rdergesellschaft&account=01194700&bnc=100205000&amount=10,00&currency=EUR&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_handle_bnc_whitespaces()
+        {
+            var account = "001194700";
+            var bnc = "10020 5000";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account: account, bnc: bnc, amount: amount);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepayment?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000&amount=10,00&currency=EUR&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_handle_iban_whitespaces()
+        {
+            var iban = "DE33 100205000 0011947 00";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepaymentsepa?name=Wikimedia%20F%C3%B6rdergesellschaft&iban=DE33100205000001194700&bic=BFSWDE33BER&amount=10,00&currency=EUR&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_handle_bic_whitespaces()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BF SWDE3 3BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepaymentsepa?name=Wikimedia%20F%C3%B6rdergesellschaft&iban=DE33100205000001194700&bic=BFSWDE33BER&amount=10,00&currency=EUR&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_add_decimals()
+        {
+            var account = "001194700";
+            var bnc = "10020 5000";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10;
+
+            var generator = new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account: account, bnc: bnc, amount: amount);
+
+            generator
+                .ToString()
+                .ShouldBe("bank://singlepayment?name=Wikimedia%20F%C3%B6rdergesellschaft&account=001194700&bnc=100205000&amount=10,00&currency=EUR&executiondate="+DateTime.Now.ToString("ddMMyyyy")+"");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_wrong_contact_constructor_exception()
+        {
+            var account = "0001194700";
+            var bnc = "10020 5000";
+            var name = "Wikimedia Fördergesellschaft";
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account, bnc, "", "", "New business contact."));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The constructor without an amount may only ne used with authority types 'contact' and 'contact_v2'.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_wrong_contact_v2_constructor_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+                  
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.periodicsinglepaymentsepa, name, iban: iban, bic: bic));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The constructor without an amount may only ne used with authority types 'contact' and 'contact_v2'.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_wrong_nonsepa_constructor_exception()
+        {
+            var account = "0001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10;
+            
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, account: account, bnc: bnc, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The constructor with 'account' and 'bnc' may only be used with 'non SEPA' authority types. Either choose another authority type or switch constructor.");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_wrong_nonsepa_constructor_periodic_exception()
+        {
+            var account = "0001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var amount = 10.00m;
+            var postingKey = 69;
+            var periodicTimeunit = "";
+            var periodicTimeunitRotation = 2;
+            var periodicFirstExecutionDate = DateTime.Now;
+            var periodicLastExecutionDate = DateTime.Now.AddMonths(3);
+            Currency currency = Currency.USD;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.periodicsinglepayment, name, account, bnc, amount, periodicTimeunit, periodicTimeunitRotation, periodicFirstExecutionDate, periodicLastExecutionDate, reason, postingKey, currency, DateTime.Now));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("When using 'periodicsinglepayment' as authority type, the parameters 'periodicTimeunit' and 'periodicTimeunitRotation' must be set.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_wrong_sepa_constructor_exception()
+        {
+            var iban = "DE33 100205000 0011947 00";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+                  
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, iban: iban, bic: bic, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The constructor with 'iban' and 'bic' may only be used with 'SEPA' authority types. Either choose another authority type or switch constructor.");
+
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_wrong_sepa_constructor_periodic_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var sepaReference = "Fake SEPA reference";
+            var amount = 10.00m;
+            var periodicTimeunit = "M";
+            var periodicTimeunitRotation = 0;
+            var periodicFirstExecutionDate = DateTime.Now;
+            var periodicLastExecutionDate = DateTime.Now.AddMonths(3);
+            Currency currency = Currency.USD;
+            
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.periodicsinglepaymentsepa, name, iban, bic, amount, periodicTimeunit, periodicTimeunitRotation, periodicFirstExecutionDate, periodicLastExecutionDate, "", "", new DateTime(2017, 03, 01), reason, sepaReference, currency, DateTime.Now));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("When using 'periodicsinglepaymentsepa' as authority type, the parameters 'periodicTimeunit' and 'periodicTimeunitRotation' must be set.");
+
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_name_too_long_exception()
+        {
+            var iban = "DE33 100205000 0011947 00";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft has really really really long name, over 71 chars";
+            var amount = 10.00m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("(Payee-)Name must be shorter than 71 chars.");
+
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_reason_too_long_exception()
+        {
+            var iban = "DE33 100205000 0011947 00";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "A long long long reason text which may resolve in an exception";
+            var amount = 10.00m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount, reason: reason));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("Reasons texts have to be shorter than 28 chars.");
+
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_account_exception()
+        {
+            var account = "1194700AD";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account: account, bnc: bnc, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The account entered isn't valid.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_bnc_exception()
+        {
+            var account = "001194700";
+            var bnc = "10020500023545626226262";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account: account, bnc: bnc, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The bnc entered isn't valid.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_postingkey_exception()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var postingKey = 101;
+            var amount = 10.00m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account: account, bnc: bnc, amount: amount, postingKey: postingKey));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("PostingKey must be within 0 and 99.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_iban_exception()
+        {
+            var iban = "DE33100205AZB000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The IBAN entered isn't valid.");
+
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_bic_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "B2FSWDE33BER99871ABC99998";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.00m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The BIC entered isn't valid.");
+
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_separeference_too_long_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var creditorId = "DE 02 TSV 01234567890";
+            var mandateId = "987543CB2";
+            var sepaReference = "Fake SEPA reference which is also much to long for the reference field.";
+            var amount = 10.00m;
+            Currency currency = Currency.USD;
+            
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singledirectdebitsepa, name, iban, bic, amount, "", 0, null, null, creditorId, mandateId, new DateTime(2017, 03, 01), reason, sepaReference, currency, DateTime.Now));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("SEPA reference texts have to be shorter than 36 chars.");
+
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_creditorid_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var creditorId = "12DE 02 TSV 01234567890";
+            var mandateId = "987543CB2";
+            var sepaReference = "Fake SEPA reference.";
+            var amount = 10.00m;
+            Currency currency = Currency.USD;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singledirectdebitsepa, name, iban, bic, amount, "", 0, null, null, creditorId, mandateId, new DateTime(2017, 03, 01), reason, sepaReference, currency, DateTime.Now));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The creditorId entered isn't valid.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_mandateid_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var creditorId = "DE 02 TSV 01234567890";
+            var mandateId = "ÄÖ987543CB2 1990 2017";
+            var sepaReference = "Fake SEPA reference.";
+            var amount = 10.00m;
+            Currency currency = Currency.USD;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singledirectdebitsepa, name, iban, bic, amount, "", 0, null, null, creditorId, mandateId, new DateTime(2017, 03, 01), reason, sepaReference, currency, DateTime.Now));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The mandateId entered isn't valid.");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_amount_too_much_digits_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 10.001m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("Amount must have less than 3 digits after decimal point.");
+
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_amount_too_big_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var amount = 1000000000m;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepaymentsepa, name, iban: iban, bic: bic, amount: amount));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("Amount has to at least 0.01 and must be smaller or equal to 999999999.99.");
+
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_executiondate_exception()
+        {
+            var account = "001194700";
+            var bnc = "100205000";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var amount = 10.00m;
+            var postingKey = 69;
+            var executionDate = new DateTime(2017, 1, 1);
+            Currency currency = Currency.USD;
+            
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.singlepayment, name, account, bnc, amount, "", 0, null, null, reason, postingKey, currency, executionDate));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("Execution date must be today or in future.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_periodictimeunit_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var sepaReference = "Fake SEPA reference";
+            var amount = 10.00m;
+            var periodicTimeunit = "Z";
+            var periodicTimeunitRotation = 1;
+            var periodicFirstExecutionDate = DateTime.Now;
+            var periodicLastExecutionDate = DateTime.Now.AddMonths(3);
+            Currency currency = Currency.USD;
+                        
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.periodicsinglepaymentsepa, name, iban, bic, amount, periodicTimeunit, periodicTimeunitRotation, periodicFirstExecutionDate, periodicLastExecutionDate, "", "", new DateTime(2017, 03, 01), reason, sepaReference, currency, DateTime.Now));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The periodicTimeunit must be either 'M' (monthly) or 'W' (weekly).");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/BezahlCode")]
+        public void bezahlcode_generator_should_throw_invalid_periodictimeunitrotation_exception()
+        {
+            var iban = "DE33100205000001194700";
+            var bic = "BFSWDE33BER";
+            var name = "Wikimedia Fördergesellschaft";
+            var reason = "Thanks for all your efforts";
+            var sepaReference = "Fake SEPA reference";
+            var amount = 10.00m;
+            var periodicTimeunit = "M";
+            var periodicTimeunitRotation = 128;
+            var periodicFirstExecutionDate = DateTime.Now;
+            var periodicLastExecutionDate = DateTime.Now.AddMonths(3);
+            Currency currency = Currency.USD;
+
+            var exception = Record.Exception(() => new PayloadGenerator.BezahlCode(AuthorityType.periodicsinglepaymentsepa, name, iban, bic, amount, periodicTimeunit, periodicTimeunitRotation, periodicFirstExecutionDate, periodicLastExecutionDate, "", "", new DateTime(2017, 03, 01), reason, sepaReference, currency, DateTime.Now));
+
+            Assert.NotNull(exception);
+            Assert.IsType<BezahlCodeException>(exception);
+            exception.Message.ShouldBe("The periodicTimeunitRotation must be 1 or greater. (It means repeat the payment every 'periodicTimeunitRotation' weeks/months.");
+        }
+
+        
+        
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Reference")]
+        public void swissqrcode_generator_should_throw_reference_not_allowed()
+        {
+            var refType = ReferenceType.NON;
+            var reference = "1234567890123456";
+            var refTextType = ReferenceTextType.CreditorReferenceIso11649;
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Reference(refType, reference, refTextType));
+
+            Assert.NotNull(exception);
+            Assert.IsType<SwissQrCodeReferenceException>(exception);
+            exception.Message.ShouldBe("Reference is only allowed when referenceType not equals \"NON\"");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Reference")]
+        public void swissqrcode_generator_should_throw_missing_reftexttype()
+        {
+            var refType = ReferenceType.SCOR;
+            var reference = "1234567890123456";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Reference(refType, reference));
+
+            Assert.NotNull(exception);
+            Assert.IsType<SwissQrCodeReferenceException>(exception);
+            exception.Message.ShouldBe("You have to set an ReferenceTextType when using the reference text.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Reference")]
+        public void swissqrcode_generator_should_throw_qrr_ref_too_long()
+        {
+            var refType = ReferenceType.QRR;
+            var reference = "9900050000000003200710123031234654574398214093682164062138462089364";
+            var refTextType = ReferenceTextType.QrReference;
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Reference(refType, reference, refTextType));
+
+            Assert.NotNull(exception);
+            Assert.IsType<SwissQrCodeReferenceException>(exception);
+            exception.Message.ShouldBe("QR-references have to be shorter than 28 chars.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Reference")]
+        public void swissqrcode_generator_should_throw_qrr_ref_wrong_char()
+        {
+            var refType = ReferenceType.QRR;
+            var reference = "99000ABCDF5000032007101230";
+            var refTextType = ReferenceTextType.QrReference;
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Reference(refType, reference, refTextType));
+
+            Assert.NotNull(exception);
+            Assert.IsType<SwissQrCodeReferenceException>(exception);
+            exception.Message.ShouldBe("QR-reference must exist out of digits only.");
+        }
+        
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Reference")]
+        public void swissqrcode_generator_should_throw_qrr_ref_checksum_invalid()
+        {
+            var refType = ReferenceType.QRR;
+            var reference = "990005000000000320071012304";
+            var refTextType = ReferenceTextType.QrReference;
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Reference(refType, reference, refTextType));
+
+            Assert.NotNull(exception);
+            Assert.IsType<SwissQrCodeReferenceException>(exception);
+            exception.Message.ShouldBe("QR-references is invalid. Checksum error.");
+        }
+        
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Reference")]
+        public void swissqrcode_generator_should_throw_iso11649_ref_too_long()
+        {
+            var refType = ReferenceType.QRR;
+            var reference = "99000500000000032007101230312346545743982162138462089364";
+            var refTextType = ReferenceTextType.CreditorReferenceIso11649;
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Reference(refType, reference, refTextType));
+
+            Assert.NotNull(exception);
+            Assert.IsType<SwissQrCodeReferenceException>(exception);
+            exception.Message.ShouldBe("Creditor references (ISO 11649) have to be shorter than 26 chars.");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Reference")]
+        public void swissqrcode_generator_should_throw_unstructured_msg_too_long()
+        {
+            var refType = ReferenceType.QRR;
+            var reference = "990005000000000320071012303";
+            var refTextType = ReferenceTextType.QrReference;
+            var unstructuredMessage = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et mag";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Reference(refType, reference, refTextType, unstructuredMessage));
+
+            Assert.NotNull(exception);
+            Assert.IsType<SwissQrCodeReferenceException>(exception);
+            exception.Message.ShouldBe("The unstructured message must be shorter than 141 chars.");
+        }
+
+        
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Iban")]
+        public void swissqrcode_generator_should_generate_iban()
+        {
+            var iban = "CH2609000000857666015";
+            var ibanType = PayloadGenerator.SwissQrCode.Iban.IbanType.Iban;
+
+            var generator = new PayloadGenerator.SwissQrCode.Iban(iban, ibanType);
+
+            generator
+                .ToString()
+                .ShouldBe("CH2609000000857666015");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Iban")]
+        public void swissqrcode_generator_should_generate_iban_qr()
+        {
+            var iban = "CH2609000000857666015";
+            var ibanType = PayloadGenerator.SwissQrCode.Iban.IbanType.QrIban;
+
+            var generator = new PayloadGenerator.SwissQrCode.Iban(iban, ibanType);
+
+            generator
+                .ToString()
+                .ShouldBe("CH2609000000857666015");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Iban")]
+        public void swissqrcode_generator_should_remove_spaces_iban()
+        {
+            var iban = "CH26 0900 0000 8576 6601 5";
+            var ibanType = PayloadGenerator.SwissQrCode.Iban.IbanType.Iban;
+
+            var generator = new PayloadGenerator.SwissQrCode.Iban(iban, ibanType);
+
+            generator
+                .ToString()
+                .ShouldBe("CH2609000000857666015");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Iban")]
+        public void swissqrcode_generator_should_throw_invalid_iban()
+        {
+            var iban = "CHC2609000000857666015";
+            var ibanType = PayloadGenerator.SwissQrCode.Iban.IbanType.Iban;
+                     
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Iban(iban, ibanType));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Iban.SwissQrCodeIbanException>(exception);
+            exception.Message.ShouldBe("The IBAN entered isn't valid.");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Iban")]
+        public void swissqrcode_generator_should_throw_ivalid_iban_country()
+        {
+            var iban = "DE2609000000857666015";
+            var ibanType = PayloadGenerator.SwissQrCode.Iban.IbanType.Iban;
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Iban(iban, ibanType));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Iban.SwissQrCodeIbanException>(exception);
+            exception.Message.ShouldBe("The IBAN must start with \"CH\" or \"LI\".");
+        }
+
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_generate_contact_simple()
+        {
+            var name = "John Doe";
+            var zip = "3003";
+            var city = "Bern";
+            var country = "CH";
+           
+            var generator = new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country);
+
+            generator
+                .ToString()
+                .ShouldBe("John Doe\r\n\r\n\r\n3003\r\nBern\r\nCH\r\n");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_generate_contact_full()
+        {
+            var name = "John Doe";
+            var zip = "3003";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var generator = new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber);
+
+            generator
+                .ToString()
+                .ShouldBe("John Doe\r\nParlamentsgebäude\r\n1\r\n3003\r\nBern\r\nCH\r\n");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_name_empty()
+        {
+            var name = "";
+            var zip = "3003";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("Name must not be empty.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_name_too_long()
+        {
+            var name = "John Dorian Peter Charles Lord of the Rings and Master of Disaster Grayham";
+            var zip = "3003";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("Name must be shorter than 71 chars.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_street_too_long()
+        {
+            var name = "John Doe";
+            var zip = "3003";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude in der wunderschönen aber auch ziemlich teuren Stadt Bern in der Schweiz";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("Street must be shorter than 71 chars and must not contain a house number.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_street_with_number()
+        {
+            var name = "John Doe";
+            var zip = "3003";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude 1";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("Street must be shorter than 71 chars and must not contain a house number.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_housenumber_too_long()
+        {
+            var name = "John Doe";
+            var zip = "3003";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "123456789123456789";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("House number must be shorter than 17 chars.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_zip_empty()
+        {
+            var name = "John Doe";
+            var zip = "";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("Zip code must not be empty.");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_zip_too_long()
+        {
+            var name = "John Doe";
+            var zip = "30031234567891234";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("Zip code must be shorter than 17 chars. Only digits are allowed.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_zip_has_alphanum()
+        {
+            var name = "John Doe";
+            var zip = "3003CHF";
+            var city = "Bern";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("Zip code must be shorter than 17 chars. Only digits are allowed.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_city_empty()
+        {
+            var name = "John Doe";
+            var zip = "3003";
+            var city = "";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("City must not be empty.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_city_too_long()
+        {
+            var name = "John Doe";
+            var zip = "3003";
+            var city = "Berner-Sangerhausen-Ober-Hinter-der-Alm-Stadt-am-Unter-Über-Berg";
+            var country = "CH";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("City name must be shorter than 36 chars.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode.Contact")]
+        public void swissqrcode_generator_should_throw_wrong_countrycode()
+        {
+            var name = "John Doe";
+            var zip = "3003";
+            var city = "Bern";
+            var country = "CHE";
+            var street = "Parlamentsgebäude";
+            var houseNumber = "1";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode.Contact(name, zip, city, country, street, houseNumber));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.Contact.SwissQrCodeContactException>(exception);
+            exception.Message.ShouldBe("Country must be a valid \"two letter\" country code as defined by  ISO 3166-1, but it isn't.");
+        }
+
+           
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode")]
+        public void swissqrcode_generator_should_generate_swisscode_simple()
+        {
+            var creditor = new PayloadGenerator.SwissQrCode.Contact("John Doe", "3003", "Bern", "CH", "Parlamentsgebäude", "1");
+            var iban = new PayloadGenerator.SwissQrCode.Iban("CH2609000000857666015", PayloadGenerator.SwissQrCode.Iban.IbanType.Iban);
+            var reference = new PayloadGenerator.SwissQrCode.Reference(ReferenceType.QRR, "990005000000000320071012303", ReferenceTextType.QrReference);
+            var currency = PayloadGenerator.SwissQrCode.Currency.CHF;
+
+            var generator = new PayloadGenerator.SwissQrCode(iban, currency, creditor, reference);
+
+            generator
+                .ToString()
+                .ShouldBe("SPC\r\n0100\r\n1\r\nCH2609000000857666015\r\nJohn Doe\r\nParlamentsgebäude\r\n1\r\n3003\r\nBern\r\nCH\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n756\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nQRR\r\n990005000000000320071012303\r\n\r\n");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode")]
+        public void swissqrcode_generator_should_generate_swisscode_full()
+        {
+            var contactGeneral = new PayloadGenerator.SwissQrCode.Contact("John Doe", "3003", "Bern", "CH", "Parlamentsgebäude", "1");
+            var iban = new PayloadGenerator.SwissQrCode.Iban("CH2609000000857666015", PayloadGenerator.SwissQrCode.Iban.IbanType.Iban);
+            var reference = new PayloadGenerator.SwissQrCode.Reference(ReferenceType.QRR, "990005000000000320071012303", ReferenceTextType.QrReference);
+            var currency = PayloadGenerator.SwissQrCode.Currency.CHF;
+            var amount = 100.25m;
+            var reqDateOfPayment = new DateTime(2017, 03, 01);
+           
+            var generator = new PayloadGenerator.SwissQrCode(iban, currency, contactGeneral, reference, contactGeneral, amount, reqDateOfPayment, contactGeneral);
+
+            generator
+                .ToString()
+                .ShouldBe("SPC\r\n0100\r\n1\r\nCH2609000000857666015\r\nJohn Doe\r\nParlamentsgebäude\r\n1\r\n3003\r\nBern\r\nCH\r\nJohn Doe\r\nParlamentsgebäude\r\n1\r\n3003\r\nBern\r\nCH\r\n100,25\r\n756\r\n2017-03-01\r\nJohn Doe\r\nParlamentsgebäude\r\n1\r\n3003\r\nBern\r\nCH\r\nQRR\r\n990005000000000320071012303\r\n\r\n");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode")]
+        public void swissqrcode_generator_should_generate_swisscode_full_alt()
+        {
+            var contactGeneral = new PayloadGenerator.SwissQrCode.Contact("John Doe", "3003", "Bern", "CH", "Parlamentsgebäude", "1");
+            var iban = new PayloadGenerator.SwissQrCode.Iban("CH2609000000857666015", PayloadGenerator.SwissQrCode.Iban.IbanType.Iban);
+            var reference = new PayloadGenerator.SwissQrCode.Reference(ReferenceType.QRR, "990005000000000320071012303", ReferenceTextType.QrReference);
+            var currency = PayloadGenerator.SwissQrCode.Currency.CHF;
+            var amount = 100.25m;
+            var reqDateOfPayment = new DateTime(2017, 03, 01);
+
+            var generator = new PayloadGenerator.SwissQrCode(iban, currency, contactGeneral, reference, contactGeneral, amount, reqDateOfPayment, contactGeneral, "alt1", "alt2");
+
+            generator
+                .ToString()
+                .ShouldBe("SPC\r\n0100\r\n1\r\nCH2609000000857666015\r\nJohn Doe\r\nParlamentsgebäude\r\n1\r\n3003\r\nBern\r\nCH\r\nJohn Doe\r\nParlamentsgebäude\r\n1\r\n3003\r\nBern\r\nCH\r\n100,25\r\n756\r\n2017-03-01\r\nJohn Doe\r\nParlamentsgebäude\r\n1\r\n3003\r\nBern\r\nCH\r\nQRR\r\n990005000000000320071012303\r\n\r\nalt1\r\nalt2\r\n");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode")]
+        public void swissqrcode_generator_should_throw_amount_too_big()
+        {
+            var contactGeneral = new PayloadGenerator.SwissQrCode.Contact("John Doe", "3003", "Bern", "CH", "Parlamentsgebäude", "1");
+            var iban = new PayloadGenerator.SwissQrCode.Iban("CH2609000000857666015", PayloadGenerator.SwissQrCode.Iban.IbanType.Iban);
+            var reference = new PayloadGenerator.SwissQrCode.Reference(ReferenceType.QRR, "990005000000000320071012303", ReferenceTextType.QrReference);
+            var currency = PayloadGenerator.SwissQrCode.Currency.CHF;
+            var amount = 1234567891.25m;
+            var reqDateOfPayment = new DateTime(2017, 03, 01);
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode(iban, currency, contactGeneral, reference, contactGeneral, amount, reqDateOfPayment, contactGeneral));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.SwissQrCodeException>(exception);
+            exception.Message.ShouldBe("Amount (including decimals) must be shorter than 13 places.");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode")]
+        public void swissqrcode_generator_should_throw_incompatible_reftype()
+        {
+            var contactGeneral = new PayloadGenerator.SwissQrCode.Contact("John Doe", "3003", "Bern", "CH", "Parlamentsgebäude", "1");
+            var iban = new PayloadGenerator.SwissQrCode.Iban("CH2609000000857666015", PayloadGenerator.SwissQrCode.Iban.IbanType.QrIban);
+            var reference = new PayloadGenerator.SwissQrCode.Reference(ReferenceType.NON);
+            var currency = PayloadGenerator.SwissQrCode.Currency.CHF;
+            var amount = 100.25m;
+            var reqDateOfPayment = new DateTime(2017, 03, 01);
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode(iban, currency, contactGeneral, reference, contactGeneral, amount, reqDateOfPayment, contactGeneral));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.SwissQrCodeException>(exception);
+            exception.Message.ShouldBe("If QR-IBAN is used, you have to choose \"QRR\" or \"SCOR\" as reference type!");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode")]
+        public void swissqrcode_generator_should_throw_alt1_too_long()
+        {
+            var contactGeneral = new PayloadGenerator.SwissQrCode.Contact("John Doe", "3003", "Bern", "CH", "Parlamentsgebäude", "1");
+            var iban = new PayloadGenerator.SwissQrCode.Iban("CH2609000000857666015", PayloadGenerator.SwissQrCode.Iban.IbanType.QrIban);
+            var reference = new PayloadGenerator.SwissQrCode.Reference(ReferenceType.QRR);
+            var currency = PayloadGenerator.SwissQrCode.Currency.CHF;
+            var amount = 100.25m;
+            var reqDateOfPayment = new DateTime(2017, 03, 01);
+            var alt1 = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean ma";
+
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode(iban, currency, contactGeneral, reference, contactGeneral, amount, reqDateOfPayment, contactGeneral, alt1));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.SwissQrCodeException>(exception);
+            exception.Message.ShouldBe("Alternative procedure information block 1 must be shorter than 101 chars.");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/SwissQrCode")]
+        public void swissqrcode_generator_should_throw_alt2_too_long()
+        {
+            var contactGeneral = new PayloadGenerator.SwissQrCode.Contact("John Doe", "3003", "Bern", "CH", "Parlamentsgebäude", "1");
+            var iban = new PayloadGenerator.SwissQrCode.Iban("CH2609000000857666015", PayloadGenerator.SwissQrCode.Iban.IbanType.QrIban);
+            var reference = new PayloadGenerator.SwissQrCode.Reference(ReferenceType.QRR);
+            var currency = PayloadGenerator.SwissQrCode.Currency.CHF;
+            var amount = 100.25m;
+            var reqDateOfPayment = new DateTime(2017, 03, 01);
+            var alt1 = "lorem ipsum";
+            var alt2 = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean ma";
+            var exception = Record.Exception(() => new PayloadGenerator.SwissQrCode(iban, currency, contactGeneral, reference, contactGeneral, amount, reqDateOfPayment, contactGeneral, alt1, alt2));
+
+            Assert.NotNull(exception);
+            Assert.IsType<PayloadGenerator.SwissQrCode.SwissQrCodeException>(exception);
+            exception.Message.ShouldBe("Alternative procedure information block 2 must be shorter than 101 chars.");
+        }
+
+
+
         [Fact]
         [Category("PayloadGenerator/OneTimePassword")]
         public void one_time_password_generator_time_based_generates_with_standard_options()
@@ -990,6 +2294,7 @@ namespace QRCoderTests
 
             pg.ToString().ShouldBe("otpauth://totp/Google:test@google.com?secret=pwq65q55&issuer=Google");
         }
+
 
         [Fact]
         [Category("PayloadGenerator/OneTimePassword")]
@@ -1072,6 +2377,146 @@ namespace QRCoderTests
             Assert.NotNull(exception);
             Assert.IsType<PayloadGenerator.ShadowSocksConfig.ShadowSocksConfigException>(exception);
             exception.Message.ShouldBe("Value of 'port' must be within 0 and 65535.");
+        }
+
+
+        [Fact]
+        [Category("PayloadGenerator/ContactData")]
+        public void contactdata_generator_can_generate_payload_simple_mecard()
+        {
+            var firstname = "John";
+            var lastname = "Doe";
+            var outputType = PayloadGenerator.ContactData.ContactOutputType.MeCard;
+
+            var generator = new PayloadGenerator.ContactData(outputType, firstname, lastname);
+
+            generator
+                .ToString()
+                .ShouldBe("MECARD+\r\nN:Doe, John\r\nADR:,,,,,,");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/ContactData")]
+        public void contactdata_generator_can_generate_payload_full_mecard()
+        {
+            var firstname = "John";
+            var lastname = "Doe";
+            var nickname = "Johnny";
+            var phone = "+4253212222";
+            var mobilePhone = "+421701234567";
+            var workPhone = "+4253211337";
+            var email = "me@john.doe";
+            var birthday = new DateTime(1970,02,01);
+            var website = "http://john.doe";
+            var street = "Long street";
+            var houseNumber = "42";
+            var city = "Super-Town";
+            var zipCode = "12345";
+            var country = "Starlight Country";
+            var note = "Badass programmer.";
+            var outputType = PayloadGenerator.ContactData.ContactOutputType.MeCard;
+
+            var generator = new PayloadGenerator.ContactData(outputType, firstname, lastname, nickname, phone, mobilePhone, workPhone, email, birthday, website, street, houseNumber, city, zipCode, country, note);
+
+            generator
+                .ToString()
+                .ShouldBe("MECARD+\r\nN:Doe, John\r\nTEL:+4253212222\r\nTEL:+421701234567\r\nTEL:+4253211337\r\nEMAIL:me@john.doe\r\nNOTE:Badass programmer.\r\nBDAY:19700201\r\nADR:,,Long street 42,Super-Town,,12345,Starlight Country\r\nURL:http://john.doe\r\nNICKNAME:Johnny");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/ContactData")]
+        public void contactdata_generator_can_generate_payload_full_vcard21()
+        {
+            var firstname = "John";
+            var lastname = "Doe";
+            var nickname = "Johnny";
+            var phone = "+4253212222";
+            var mobilePhone = "+421701234567";
+            var workPhone = "+4253211337";
+            var email = "me@john.doe";
+            var birthday = new DateTime(1970, 02, 01);
+            var website = "http://john.doe";
+            var street = "Long street";
+            var houseNumber = "42";
+            var city = "Super-Town";
+            var zipCode = "12345";
+            var country = "Starlight Country";
+            var note = "Badass programmer.";
+            var outputType = PayloadGenerator.ContactData.ContactOutputType.VCard21;
+
+            var generator = new PayloadGenerator.ContactData(outputType, firstname, lastname, nickname, phone, mobilePhone, workPhone, email, birthday, website, street, houseNumber, city, zipCode, country, note);
+
+            generator
+                .ToString()
+                .ShouldBe("BEGIN:VCARD\r\nVERSION:2.1\r\nN:Doe;John;;;\r\nFN:John Doe\r\nTEL;HOME;VOICE:+4253212222\r\nTEL;HOME;CELL:+421701234567\r\nTEL;WORK;VOICE:+4253211337\r\nADR;HOME;PREF:;;Long street 42;Super-Town;;12345;Starlight Country\r\nBDAY:19700201\r\nURL:http://john.doe\r\nEMAIL:me@john.doe\r\nNOTE:Badass programmer.\r\nEND:VCARD");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/ContactData")]
+        public void contactdata_generator_can_generate_payload_full_vcard3()
+        {
+            var firstname = "John";
+            var lastname = "Doe";
+            var nickname = "Johnny";
+            var phone = "+4253212222";
+            var mobilePhone = "+421701234567";
+            var workPhone = "+4253211337";
+            var email = "me@john.doe";
+            var birthday = new DateTime(1970, 02, 01);
+            var website = "http://john.doe";
+            var street = "Long street";
+            var houseNumber = "42";
+            var city = "Super-Town";
+            var zipCode = "12345";
+            var country = "Starlight Country";
+            var note = "Badass programmer.";
+            var outputType = PayloadGenerator.ContactData.ContactOutputType.VCard3;
+
+            var generator = new PayloadGenerator.ContactData(outputType, firstname, lastname, nickname, phone, mobilePhone, workPhone, email, birthday, website, street, houseNumber, city, zipCode, country, note);
+
+            generator
+                .ToString()
+                .ShouldBe("BEGIN:VCARD\r\nVERSION:3.0\r\nN:Doe;John;;;\r\nFN:John Doe\r\nTEL;TYPE=HOME,VOICE:+4253212222\r\nTEL;TYPE=HOME,CELL:+421701234567\r\nTEL;TYPE=WORK,VOICE:+4253211337\r\nADR;TYPE=HOME,PREF:;;Long street 42;Super-Town;;12345;Starlight Country\r\nBDAY:19700201\r\nURL:http://john.doe\r\nEMAIL:me@john.doe\r\nNOTE:Badass programmer.\r\nNICKNAME:Johnny\r\nEND:VCARD");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/ContactData")]
+        public void contactdata_generator_can_generate_payload_full_vcard4()
+        {
+            var firstname = "John";
+            var lastname = "Doe";
+            var nickname = "Johnny";
+            var phone = "+4253212222";
+            var mobilePhone = "+421701234567";
+            var workPhone = "+4253211337";
+            var email = "me@john.doe";
+            var birthday = new DateTime(1970, 02, 01);
+            var website = "http://john.doe";
+            var street = "Long street";
+            var houseNumber = "42";
+            var city = "Super-Town";
+            var zipCode = "12345";
+            var country = "Starlight Country";
+            var note = "Badass programmer.";
+            var outputType = PayloadGenerator.ContactData.ContactOutputType.VCard4;
+
+            var generator = new PayloadGenerator.ContactData(outputType, firstname, lastname, nickname, phone, mobilePhone, workPhone, email, birthday, website, street, houseNumber, city, zipCode, country, note);
+
+            generator
+                .ToString()
+                .ShouldBe("BEGIN:VCARD\r\nVERSION:4.0\r\nN:Doe;John;;;\r\nFN:John Doe\r\nTEL;TYPE=home,voice;VALUE=uri:tel:+4253212222\r\nTEL;TYPE=home,cell;VALUE=uri:tel:+421701234567\r\nTEL;TYPE=work,voice;VALUE=uri:tel:+4253211337\r\nADR;TYPE=home,pref:;;Long street 42;Super-Town;;12345;Starlight Country\r\nBDAY:19700201\r\nURL:http://john.doe\r\nEMAIL:me@john.doe\r\nNOTE:Badass programmer.\r\nNICKNAME:Johnny\r\nEND:VCARD");
+        }
+
+        [Fact]
+        [Category("PayloadGenerator/WhatsAppMessage")]
+        public void whatsapp_generator_can_generate_payload_simple()
+        {
+            var msg = "This is a sample message with Umlauts: Ä,ö, ü and ß.";
+            var generator = new PayloadGenerator.WhatsAppMessage(msg);
+
+            generator
+                .ToString()
+                .ShouldBe("whatsapp://send?text=This%20is%20a%20sample%20message%20with%20Umlauts%3A%20%C3%84%2C%C3%B6%2C%20%C3%BC%20and%20%C3%9F.");
         }
 
 
