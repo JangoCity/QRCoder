@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/codebude/QRCoder/</projectUrl>
     <iconUrl>http://code-bude.net/downloads/qrcoder-logo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>This is a fork for zkweb project which use System.DrawingCore. QRCoder is a simple library, written in C#.NET, which enables you to create QR Codes. It's licensed under the MIT-license.</description>
+    <description>This is a fork for zkweb project which use ZKWeb.System.Drawing. QRCoder is a simple library, written in C#.NET, which enables you to create QR Codes. It's licensed under the MIT-license.</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright &#x00A9; www.code-bude.net / Raffael Herrmann.  All rights reserved.</copyright>
     <tags>c# csharp qr qrcoder qrcode qr-generator qr-code-generator</tags>
